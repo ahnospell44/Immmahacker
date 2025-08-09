@@ -40,11 +40,19 @@ Folder Layout (Auto-created by script)
 │   ├── config/
 
 │   └── phishlets/
+
 │
+
 ├── pwndrop/
+
 │   ├── docker-compose.yml
+
 │   └── config/
+
 │
+
 └── gophish/
+
     ├── docker-compose.yml
+    
     └── config/
