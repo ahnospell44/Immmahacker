@@ -3,44 +3,28 @@ set -e
 
 USERNAME="$(whoami)"
 BASEDIR="/home/$USERNAME/RedTeamTools"
-PROJECTS=("evilnginx" "pwndrop" "gophish")
 
-echo "[*] Setting up Red Team Tools deployment for user: $USERNAME"
+echo "[*] Setting up Red Team Tools in $BASEDIR ..."
+mkdir -p "$BASEDIR/evilnginx/config" "$BASEDIR/evilnginx/phishlets"
+mkdir -p "$BASEDIR/pwndrop/config"
+mkdir -p "$BASEDIR/gophish/config"
 
-# Create base directory
-mkdir -p "$BASEDIR"
-
-for PROJECT in "${PROJECTS[@]}"; do
-    echo "[*] Preparing $PROJECT ..."
-    mkdir -p "$BASEDIR/$PROJECT/config"
-
-    # Create extra dirs where needed
-    if [ "$PROJECT" == "evilnginx" ]; then
-        mkdir -p "$BASEDIR/$PROJECT/phishlets"
-    fi
-
-    # Write docker-compose.yml to project folder
-    case "$PROJECT" in
-        evilnginx)
-            cat > "$BASEDIR/$PROJECT/docker-compose.yml" <<'EOF'
+# Create all-in-one docker-compose.yml
+cat > "$BASEDIR/docker-compose.yml" <<'EOF'
 version: "3.8"
+
 services:
   evilnginx:
-    image: warhorse/evilginx2
+    image: warhorse/evilnginx2
     container_name: evilnginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./config:/config
-      - ./phishlets:/phishlets
+      - ./evilnginx/config:/config
+      - ./evilnginx/phishlets:/phishlets
     restart: unless-stopped
-EOF
-            ;;
-        pwndrop)
-            cat > "$BASEDIR/$PROJECT/docker-compose.yml" <<'EOF'
-version: "3.8"
-services:
+
   pwndrop:
     image: linuxserver/pwndrop
     container_name: pwndrop
@@ -51,14 +35,9 @@ services:
       - PGID=1000
       - TZ=America/New_York
     volumes:
-      - ./config:/config
+      - ./pwndrop/config:/config
     restart: unless-stopped
-EOF
-            ;;
-        gophish)
-            cat > "$BASEDIR/$PROJECT/docker-compose.yml" <<'EOF'
-version: "3.8"
-services:
+
   gophish:
     image: gophish/gophish
     container_name: gophish
@@ -66,15 +45,13 @@ services:
       - "3333:3333"
       - "3380:80"
     volumes:
-      - ./config:/config
+      - ./gophish/config:/config
     restart: unless-stopped
 EOF
-            ;;
-    esac
 
-    # Start project
-    echo "[*] Starting $PROJECT container ..."
-    (cd "$BASEDIR/$PROJECT" && docker compose up -d)
-done
+# Deploy all services
+cd "$BASEDIR"
+echo "[*] Starting all containers..."
+docker compose up -d
 
-echo "[✔] All Red Team tools deployed successfully!"
+echo "[✔] Evilnginx, Pwndrop, and GoPhish are now running."
