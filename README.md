@@ -28,11 +28,17 @@ One-command deployment — easy to re-run or modify.
 
 Folder Layout (Auto-created by script)
 
+
 /home/<your_username>/RedTeamTools/
+
 │
+
 ├── evilnginx/
+
 │   ├── docker-compose.yml
+
 │   ├── config/
+
 │   └── phishlets/
 │
 ├── pwndrop/
